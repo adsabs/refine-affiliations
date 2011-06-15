@@ -1,0 +1,94 @@
+[
+  {
+    "op": "core/column-split",
+    "description": "Split column Column by separator",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Column",
+    "guessCellType": false,
+    "removeOriginalColumn": true,
+    "mode": "separator",
+    "separator": "\\t",
+    "regex": true,
+    "maxColumns": 0
+  },
+  {
+    "op": "core/column-rename",
+    "description": "Rename column Column 1 to Original",
+    "oldColumnName": "Column 1",
+    "newColumnName": "Original"
+  },
+  {
+    "op": "core/column-rename",
+    "description": "Rename column Column 2 to Bibcodes",
+    "oldColumnName": "Column 2",
+    "newColumnName": "Bibcodes"
+  },
+  {
+    "op": "core/column-addition",
+    "description": "Create column Emails at index 1 based on column Original using expression jython:emails = []\n\nwhile '<EMAIL>' in value:\n    _, value = value.split('<EMAIL>')\n    email, value = value.split('</EMAIL>')\n    emails.append(email.strip())\n\nif emails:\n    return '[\"%s\"]' % '\", \"'.join(emails)\nelse:\n    return '[]'",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "newColumnName": "Emails",
+    "columnInsertIndex": 1,
+    "baseColumnName": "Original",
+    "expression": "jython:emails = []\n\nwhile '<EMAIL>' in value:\n    _, value = value.split('<EMAIL>')\n    email, value = value.split('</EMAIL>')\n    emails.append(email.strip())\n\nif emails:\n    return '[\"%s\"]' % '\", \"'.join(emails)\nelse:\n    return '[]'",
+    "onError": "set-to-blank"
+  },
+  {
+    "op": "core/text-transform",
+    "description": "Text transform on cells in column Original using expression grel:value.replace(/<EMAIL>[^<]*<\\/EMAIL>/, '')",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Original",
+    "expression": "grel:value.replace(/<EMAIL>[^<]*<\\/EMAIL>/, '')",
+    "onError": "set-to-blank",
+    "repeat": false,
+    "repeatCount": 10
+  },
+  {
+    "op": "core/text-transform",
+    "description": "Text transform on cells in column Original using expression value.trim()",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Original",
+    "expression": "value.trim()",
+    "onError": "keep-original",
+    "repeat": false,
+    "repeatCount": 10
+  },
+  {
+    "op": "core/text-transform",
+    "description": "Text transform on cells in column Original using expression value.replace(/\\s+/,' ')",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Original",
+    "expression": "value.replace(/\\s+/,' ')",
+    "onError": "keep-original",
+    "repeat": false,
+    "repeatCount": 10
+  },
+  {
+    "op": "core/column-addition",
+    "description": "Create column Without email at index 1 based on column Original using expression grel:value",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "newColumnName": "Without email",
+    "columnInsertIndex": 1,
+    "baseColumnName": "Original",
+    "expression": "grel:value",
+    "onError": "set-to-blank"
+  }
+]
