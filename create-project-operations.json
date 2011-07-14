@@ -28,7 +28,7 @@
   },
   {
     "op": "core/column-addition",
-    "description": "Create column Emails at index 1 based on column Original using expression jython:emails = []\n\nwhile '<EMAIL>' in value:\n    _, value = value.split('<EMAIL>')\n    email, value = value.split('</EMAIL>')\n    emails.append(email.strip())\n\nif emails:\n    return '[\"%s\"]' % '\", \"'.join(emails)\nelse:\n    return '[]'",
+    "description": "Create column Emails at index 1 based on column Original using expression jython:emails = []\n\nwhile '<EMAIL>' in value:\n    _, value = value.split('<EMAIL>', 1)\n    email, value = value.split('</EMAIL>', 1)\n    emails.append(email.strip().replace('\"', r'\\\"'))\n\nif emails:\n    return '[\"%s\"]' % '\", \"'.join(emails)\nelse:\n    return '[]'",
     "engineConfig": {
       "facets": [],
       "mode": "row-based"
@@ -36,7 +36,7 @@
     "newColumnName": "Emails",
     "columnInsertIndex": 1,
     "baseColumnName": "Original",
-    "expression": "jython:emails = []\n\nwhile '<EMAIL>' in value:\n    _, value = value.split('<EMAIL>')\n    email, value = value.split('</EMAIL>')\n    emails.append(email.strip())\n\nif emails:\n    return '[\"%s\"]' % '\", \"'.join(emails)\nelse:\n    return '[]'",
+    "expression": "jython:emails = []\n\nwhile '<EMAIL>' in value:\n    _, value = value.split('<EMAIL>', 1)\n    email, value = value.split('</EMAIL>', 1)\n    emails.append(email.strip().replace('\"', r'\\\"'))\n\nif emails:\n    return '[\"%s\"]' % '\", \"'.join(emails)\nelse:\n    return '[]'",
     "onError": "set-to-blank"
   },
   {

@@ -10,13 +10,11 @@ from clean_ads_affiliations import clean_ads_affs
 SERVER = 'http://adsx.cfa.harvard.edu:3333'
 
 def create_refine_project(path, name):
-
     r  = refine.Refine(SERVER)
-
     x = r.new_project(project_file=path,
             project_name='%s (%s)' % (name, os.path.basename(path).replace('.reversed', '.merged')), 
-            split_into_columns=False,
-            separator='',
+            split_into_columns=True,
+            separator='\t',
             ignore_initial_non_blank_lines=0,
             header_lines=0,
             skip_initial_data_rows=0,
@@ -24,7 +22,7 @@ def create_refine_project(path, name):
             guess_value_type=False,
             ignore_quotes=False)
 
-    print "-- Project has been created. Now applying some few operations."
+    print "-- Project has been created. Now applying a few operations."
 
     x.apply_operations('create-project-operations.json')
 

@@ -2,11 +2,13 @@
 
 from optparse import OptionParser
 import sys
-import simplejson
+import json
 from google.refine import refine
+import urllib
 
 sys.path.append('/proj/ads/soft/python/lib/site-packages')
 import ads.Unicode as Unicode
+from csv_utils import unescape_csv
 
 UNICODE_HANDLER = Unicode.UnicodeHandler()
 
@@ -15,47 +17,40 @@ SERVER = 'http://adsx.cfa.harvard.edu:3333'
 class RefineExportException(Exception):
     pass
 
-def export_project_in_json(project_id):
+def get_tsv_rows(project_id):
     p = refine.RefineProject(SERVER, project_id=project_id)
-    json = p.export(export_format='json').read()
-    return json
+    return p.export(export_format='tsv')
 
-def unpack_exported_json_file(json, changed_only=False):
+def format_rows(rows):
     """
-    Reads the raw JSON refine project and returns a list of affiliations that
-    can be put back in ADS.
+    Formats the raw output from Refine into an ADS-readable file.
     """
-    json = simplejson.loads(json)
-    rows = json['rows']
+    affiliations = []
 
-    output_affs = []
-
+    title = rows.next()
     for row in rows:
-        aff_original = row['Original']
-        aff = row['Without email']
-        emails = row['Emails']
-        bibcodes = row['Bibcodes']
-
-        if emails:
-            emails = eval(emails)
-            emails = '<EMAIL>%s</EMAIL>' % '</EMAIL><EMAIL>'.join(emails)
+        original, new, emails, bibcodes = row.split('\t')
         
-        if aff and emails:
-            aff = aff + emails
-        elif emails:
-            aff = emails
-        elif aff is None:
-            aff = ''
+        new = unescape_csv(new)
 
-        if not changed_only or aff != original:
-            for bibcode in bibcodes.split(' '):
-                output_affs.append('%s\t%s' % (bibcode, aff))
+        try:
+            emails = eval(unescape_csv(emails))
+            if emails:
+                emails = '<EMAIL>%s</EMAIL>' % '</EMAIL><EMAIL>'.join(emails)
+                new += emails
+        except SyntaxError:
+            print 'Problem with row:\n' + row
 
-    return output_affs
+        bibcodes = bibcodes.split(' ')
+        for bibcode in bibcodes:
+            affiliations.append(bibcode + '\t' + new)
 
-def write_affiliations_to_file(path):
-    fs = codecs.open(path, mode='w', encoding='UTF-8')
+    return affiliations
 
+def write_affiliations_to_file(path, affs):
+    fs = open(path, 'w')
+    fs.writelines(affs)
+    fs.close()
 
 def main():
     parser = OptionParser()
@@ -63,12 +58,18 @@ def main():
             help="export Refine project to FILE", metavar="FILE")
     parser.add_option("-p", "--project-id", dest="project_id",
             help="export rows from project ID", metavar="ID")
-    parser.add_option("-", "--verbose", dest="verbose",
+    parser.add_option("-v", "--verbose", dest="verbose",
             help="export rows from project ID", metavar="ID")
 
     options, args = parser.parse_args()
 
-    json = export_project_in_json(options.project_id)
+    rows = get_tsv_rows(options.project_id)
+    print 'The project %s has been exported.' % options.project_id
+    print 'Formatting the output.'
+    affiliations = format_rows(rows)
+    print 'Writing to the output file: %s.' % options.output_file
+    write_affiliations_to_file(options.output_file, affiliations)
+    print 'Done.'
 
 if __name__ == '__main__':
     main()

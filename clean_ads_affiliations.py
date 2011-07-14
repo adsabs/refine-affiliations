@@ -2,6 +2,7 @@ import sys
 import re
 import os
 import codecs
+from csv_utils import escape_csv
 
 sys.path.append('/proj/ads/soft/python/lib/site-packages')
 import ads.Unicode
@@ -20,7 +21,7 @@ def clean_ads_affs(path):
     print '-- Create the list of bibcodes.'
 
     lines = [line.split('\t', 2) for line in txt.split('\n') if line]
-    lines = [[bibcode + ',' + position, _preclean_affiliation(line)] for bibcode, position, line in lines]
+    lines = [[bibcode + ',' + position, _preclean_affiliation(escape_csv(line))] for bibcode, position, line in lines]
 
     # Reverse dictionary
     d = {}
@@ -32,7 +33,9 @@ def clean_ads_affs(path):
 
     if path.endswith('.merged'):
         new_path = os.path.join('/tmp', os.path.basename(path)[:-7] + '.reversed')
-        
+    else:
+        new_path = os.path.join('/tmp', os.path.basename(path) + '.reversed')
+
     print '-- Writing to file %s.' % new_path
 
     d = sorted(['\t'.join([aff, ' '.join(bibcodes)]) for aff, bibcodes in d])
