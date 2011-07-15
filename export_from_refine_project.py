@@ -1,21 +1,15 @@
 #!/usr/bin/python2.6
 
+import time
 from optparse import OptionParser
-import sys
-import json
 from google.refine import refine
-import urllib
 
-sys.path.append('/proj/ads/soft/python/lib/site-packages')
 import ads.Unicode as Unicode
 from csv_utils import unescape_csv
 
 UNICODE_HANDLER = Unicode.UnicodeHandler()
 
 SERVER = 'http://adsx.cfa.harvard.edu:3333'
-
-class RefineExportException(Exception):
-    pass
 
 def get_tsv_rows(project_id):
     p = refine.RefineProject(SERVER, project_id=project_id)
@@ -27,10 +21,11 @@ def format_rows(rows):
     """
     affiliations = []
 
-    title = rows.next()
+    _ = rows.next()
     for row in rows:
+        row = UNICODE_HANDLER.u2ent(row[:-1].decode('utf-8'))
         original, new, emails, bibcodes = row.split('\t')
-        
+
         new = unescape_csv(new)
 
         try:
@@ -43,16 +38,18 @@ def format_rows(rows):
 
         bibcodes = bibcodes.split(' ')
         for bibcode in bibcodes:
-            affiliations.append(bibcode + '\t' + new)
+            affiliations.append('%s\t%s' % (bibcode, new))
 
     return affiliations
 
 def write_affiliations_to_file(path, affs):
     fs = open(path, 'w')
-    fs.writelines(affs)
+    fs.write('\n'.join(affs))
     fs.close()
 
 def main():
+    t0 = time.time()
+
     parser = OptionParser()
     parser.add_option("-o", "--output", dest="output_file",
             help="export Refine project to FILE", metavar="FILE")
@@ -61,7 +58,7 @@ def main():
     parser.add_option("-v", "--verbose", dest="verbose",
             help="export rows from project ID", metavar="ID")
 
-    options, args = parser.parse_args()
+    options, _ = parser.parse_args()
 
     rows = get_tsv_rows(options.project_id)
     print 'The project %s has been exported.' % options.project_id
@@ -69,7 +66,8 @@ def main():
     affiliations = format_rows(rows)
     print 'Writing to the output file: %s.' % options.output_file
     write_affiliations_to_file(options.output_file, affiliations)
-    print 'Done.'
+    total_time = time.time() - t0
+    print 'Done in %.2f seconds.' % total_time
 
 if __name__ == '__main__':
     main()

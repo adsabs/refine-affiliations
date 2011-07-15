@@ -1,7 +1,6 @@
 #!/usr/bin/python2.6
 
 from optparse import OptionParser
-import sys
 from google.refine import refine
 import os
 
@@ -12,7 +11,7 @@ SERVER = 'http://adsx.cfa.harvard.edu:3333'
 def create_refine_project(path, name):
     r  = refine.Refine(SERVER)
     x = r.new_project(project_file=path,
-            project_name='%s (%s)' % (name, os.path.basename(path).replace('.reversed', '.merged')), 
+            project_name='%s (%s)' % (name, os.path.basename(path).replace('.reversed', '.merged')),
             split_into_columns=True,
             separator='\t',
             ignore_initial_non_blank_lines=0,
@@ -33,7 +32,7 @@ def main():
     parser.add_option("-t", "--title", dest="title",
             help="create Refine project with TITLE", metavar="TITLE")
 
-    options, args = parser.parse_args()
+    options, _ = parser.parse_args()
     input_file = os.path.abspath(options.input_file)
     title = options.title
     print 'Create a file that we can upload to Refine.'
