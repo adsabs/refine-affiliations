@@ -2,11 +2,11 @@ import sys
 import time
 import unittest
 
-from google.refine import refine
-
 if sys.hexversion < 0x02060000:
     print 'ERROR: Python version should be at least 2.6.'
     sys.exit(1)
+
+from google.refine import refine
 
 try:
     import ads_refine.create_refine_project as create
@@ -28,6 +28,10 @@ class TestRefineCreation(unittest.TestCase):
 
     def test_columns(self):
         self.assertEqual(self.project.columns, ['Original', 'Without email', 'Emails', 'Bibcodes'])
+
+    def test_row_number(self):
+        response = self.project.get_rows()
+        self.assertEqual(response.total, 17)
 
     def tearDown(self):
         self.project.delete()
