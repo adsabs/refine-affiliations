@@ -31,8 +31,11 @@ def format_rows(rows):
         try:
             emails = eval(unescape_csv(emails))
             if emails:
-                emails = '<EMAIL>%s</EMAIL>' % '</EMAIL><EMAIL>'.join(emails)
-                new += emails
+                emails = '<EMAIL>%s</EMAIL>' % '</EMAIL> <EMAIL>'.join(emails)
+                if new:
+                    new = '%s %s' % (new, emails)
+                else:
+                    new = emails
         except SyntaxError:
             print 'Problem with row:\n' + row
 
