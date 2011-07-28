@@ -1,7 +1,6 @@
 # -*- encoding: utf-8 -*-
 
 import sys
-import time
 import unittest
 
 if sys.hexversion < 0x02060000:
@@ -14,7 +13,6 @@ try:
     import ads_refine.create_refine_project as create
 except ImportError:
     import os
-    import sys
     sys.path.append(os.getcwd())
     import ads_refine.create_refine_project as create
 
@@ -52,6 +50,9 @@ class TestRefineCreation(unittest.TestCase):
         self.assertEqual(eval(self.get_cell(18, 'Emails')), [])
         self.assertEqual(eval(self.get_cell(10, 'Emails')), ["vittorio@astr1pi.difi.unipi.it"])
         self.assertEqual(eval(self.get_cell(9, 'Emails')), ["beersatmsupa.pa.msu.edukriessleratmsupa.pa.msu.edu", "tbirdatkula.phsx.ukans.edu"])
+        # Email with a double quote.
+        self.assertEqual(self.get_cell(4, 'Emails'), r'["yma@fyslab.hut.fi\""]')
+        self.assertEqual(eval(self.get_cell(4, 'Emails')), ['yma@fyslab.hut.fi"'])
 
     def test_bibcodes(self):
         self.assertEqual(self.get_cell(11, 'Bibcodes'), '1997A&AS..121..407L,0')
