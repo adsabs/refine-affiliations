@@ -22,8 +22,8 @@
   },
   {
     "op": "core/column-rename",
-    "description": "Rename column Column 2 to Bibcodes",
-    "oldColumnName": "Column 2",
+    "description": "Rename column Column2 to Bibcodes",
+    "oldColumnName": "Column2",
     "newColumnName": "Bibcodes"
   },
   {
