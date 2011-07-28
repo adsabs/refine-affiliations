@@ -11,10 +11,12 @@ from google.refine import refine
 
 try:
     import ads_refine.create_refine_project as create
+    import ads_refine.export_from_refine_project as export
 except ImportError:
     import os
     sys.path.append(os.getcwd())
     import ads_refine.create_refine_project as create
+    import ads_refine.export_from_refine_project as export
 
 TEST_DATA = 'tests/test.affils.merged'
 
@@ -22,7 +24,8 @@ class TestRefineCreation(unittest.TestCase):
 
     def setUp(self):
         project_id = create.create_refine_project(TEST_DATA, 'Test project (can be safely removed).')
-        # We need to reopen the project in order to force the refresh after applying the JSON operations.
+        # We need to reopen the project in order to force the refresh after
+        # applying the JSON operations.
         server = refine.Refine(create.SERVER)
         self.project = server.open_project(project_id)
 
@@ -57,6 +60,30 @@ class TestRefineCreation(unittest.TestCase):
     def test_bibcodes(self):
         self.assertEqual(self.get_cell(11, 'Bibcodes'), '1997A&AS..121..407L,0')
         self.assertEqual(self.get_cell(17, 'Bibcodes'), '1981MitAG..52..127S,0 1981gjsa.proc..291S,0')
+
+    def tearDown(self):
+        self.project.delete()
+
+class TestRefineExport(unittest.TestCase):
+
+    def setUp(self):
+        project_id = create.create_refine_project(TEST_DATA, 'Test project (can be safely removed).')
+        # We need to reopen the project in order to force the refresh after
+        # applying the JSON operations.
+        server = refine.Refine(create.SERVER)
+        self.project = server.open_project(project_id)
+        rows = export.get_tsv_rows(project_id)
+        self.affs = export.format_rows(rows)
+
+    def test_number_of_affiliations(self):
+        self.assertEqual(len(self.affs), 19)
+
+    def test_absence_of_unicode(self):
+        try:
+            for aff in self.affs:
+                aff.decode('ascii')
+        except UnicodeDecodeError:
+            raise
 
     def tearDown(self):
         self.project.delete()

@@ -41,9 +41,10 @@ def format_rows(rows):
 
         bibcodes = bibcodes.split(' ')
         for bibcode in bibcodes:
-            affiliations.append('%s\t%s' % (bibcode, new))
+            bibcode, position = bibcode.split(',')
+            affiliations.append('%s\t%s\t%s' % (bibcode, position, new))
 
-    return affiliations
+    return sorted(affiliations)
 
 def write_affiliations_to_file(path, affs):
     fs = open(path, 'w')
