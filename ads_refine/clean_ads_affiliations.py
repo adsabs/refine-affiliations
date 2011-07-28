@@ -21,7 +21,7 @@ def _preclean_affiliation(aff):
     aff = UNICODE_HANDLER.ent2u(aff.decode('utf-8'))
     return aff
 
-def clean_ads_affs(path):
+def clean_ads_affs(path, verbose=0):
     """
     Reads an ADS affiliation file in the form:
     bibcode\taffiliation
@@ -31,7 +31,7 @@ def clean_ads_affs(path):
     """
     txt = open(path).read()
 
-    print '-- Create the list of bibcodes.'
+    msg('-- Create the list of bibcodes.', verbose)
 
     lines = [line.split('\t', 2) for line in txt.split('\n') if line]
     lines = [
@@ -44,7 +44,7 @@ def clean_ads_affs(path):
     for bibcode, line in lines:
         d.setdefault(line, []).append(bibcode)
 
-    print '-- Transform back to list'
+    msg('-- Transform back to list', verbose)
     d = sorted(d.items())
 
     if path.endswith('.merged'):
@@ -52,10 +52,14 @@ def clean_ads_affs(path):
     else:
         new_path = os.path.join('/tmp', os.path.basename(path) + '.reversed')
 
-    print '-- Writing to file %s.' % new_path
+    msg('-- Writing to file %s.' % new_path, verbose)
 
     d = sorted(['\t'.join([aff, ' '.join(bibcodes)]) for aff, bibcodes in d])
     codecs.open(new_path, mode='w', encoding='utf-8').write('\n'.join(d))
-    print '-- Done writing to file.'
+    msg('-- Done writing to file.', verbose)
 
     return new_path
+
+def msg(message, verbose):
+    if verbose:
+        print message

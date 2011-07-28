@@ -11,7 +11,7 @@ SERVER = 'http://adsx.cfa.harvard.edu:3333'
 def create_refine_project(path, name, verbose=0):
     input_file = os.path.abspath(path)
     msg('Create a file that we can upload to Refine.', verbose)
-    new_input_file = clean_ads_affs(input_file)
+    new_input_file = clean_ads_affs(input_file, verbose)
     msg('Upload to Refine.', verbose)
 
     r  = refine.Refine(SERVER)
