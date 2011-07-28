@@ -10,7 +10,7 @@ SERVER = 'http://adsx.cfa.harvard.edu:3333'
 
 def create_refine_project(path, name):
     r  = refine.Refine(SERVER)
-    x = r.new_project(project_file=path,
+    project = r.new_project(project_file=path,
             project_name='%s (%s)' % (name, os.path.basename(path).replace('.reversed', '.merged')),
             split_into_columns=True,
             separator='\t',
@@ -23,7 +23,9 @@ def create_refine_project(path, name):
 
     print "-- Project has been created. Now applying a few operations."
 
-    x.apply_operations('create-project-operations.json')
+    project.apply_operations('ads_refine/create-project-operations.json')
+
+    return project.project_id
 
 def main():
     parser = OptionParser()

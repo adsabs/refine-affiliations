@@ -1,18 +1,30 @@
+import sys
+import time
 import unittest
 
+from google.refine import refine
+
+if sys.hexversion < 0x02060000:
+    print 'ERROR: Python version should be at least 2.6.'
+    sys.exit(1)
+
 try:
-    import ads-refine.create_refine_project as create
+    import ads_refine.create_refine_project as create
 except ImportError:
+    import os
     import sys
     sys.path.append(os.getcwd())
-    import ads-refine.create_refine_project as create
+    import ads_refine.create_refine_project as create
 
-TEST_DATA = 'ads-refine/test.affils.merged'
+TEST_DATA = 'tests/test.affils.merged'
 
 class TestRefineCreation(unittest.TestCase):
 
     def setUp(self):
-        self.project = create.create_refine_project(TEST_DATA, 'Test project (can be safely removed).')
+        project_id = create.create_refine_project(TEST_DATA, 'Test project (can be safely removed).')
+        # We need to reopen the project in order to force the refresh after applying the JSON operations.
+        server = refine.Refine(create.SERVER)
+        self.project = server.open_project(project_id)
 
     def test_columns(self):
         self.assertEqual(self.project.columns, ['Original', 'Without email', 'Emails', 'Bibcodes'])
@@ -20,4 +32,5 @@ class TestRefineCreation(unittest.TestCase):
     def tearDown(self):
         self.project.delete()
 
-if __name__ == '__main__' 
+if __name__ == '__main__':
+    unittest.main()

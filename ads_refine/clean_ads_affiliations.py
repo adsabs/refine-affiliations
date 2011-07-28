@@ -3,7 +3,12 @@ import os
 import codecs
 from csv_utils import escape_csv
 
-import ads.Unicode
+try:
+    import ads.Unicode
+except ImportError:
+    import sys
+    sys.path.append('/proj/ads/soft/python/lib/site-packages')
+    import ads.Unicode
 
 UNICODE_HANDLER = ads.Unicode.UnicodeHandler()
 SPACES_REGEX = re.compile('\s+')
