@@ -14,6 +14,3 @@ def unescape_csv(data):
         return data[1:-1].replace('""', '"')
     else:
         return data
-
-if __name__ == '__main__':
-    test()
