@@ -1,0 +1,5 @@
+#!/usr/bin/python26
+
+if __name__ == '__main__':
+    import ads_refine.export_from_refine_project
+    ads_refine.export_from_refine_project.main()
