@@ -28,16 +28,16 @@ def format_rows(rows):
 
         new = unescape_csv(new)
 
-        try:
-            emails = eval(unescape_csv(emails))
-            if emails:
+        if emails and emails != '[]':
+            try:
+                emails = eval(unescape_csv(emails))
                 emails = '<EMAIL>%s</EMAIL>' % '</EMAIL> <EMAIL>'.join(emails)
                 if new:
                     new = '%s %s' % (new, emails)
                 else:
                     new = emails
-        except SyntaxError:
-            print 'Problem with row:\n' + row
+            except SyntaxError:
+                print 'ERROR: Email field is not well formatted: ' + emails
 
         bibcodes = bibcodes.split(' ')
         for bibcode in bibcodes:
