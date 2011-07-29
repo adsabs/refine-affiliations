@@ -3,9 +3,7 @@
 import sys
 import unittest
 
-if sys.hexversion < 0x02060000:
-    print 'ERROR: Python version should be at least 2.6.'
-    sys.exit(1)
+assert sys.hexversion >= 0x02060000
 
 from google.refine import refine
 
@@ -84,6 +82,35 @@ class TestRefineExport(unittest.TestCase):
                 aff.decode('ascii')
         except UnicodeDecodeError:
             raise
+
+    def test_email_formatting(self):
+        # Affiliation with no email.
+        self.assertTrue('EMAIL>' not in self.affs[0])
+        # Affiliation with one email.
+        self.assertTrue(self.affs[6].endswith(' <EMAIL>dschmit@uni-sw.gwdg.de</EMAIL>'))
+        # Affiliation with several emails.
+        self.assertTrue(self.affs[9].endswith(' <EMAIL>beersatmsupa.pa.msu.edukriessleratmsupa.pa.msu.edu</EMAIL> <EMAIL>tbirdatkula.phsx.ukans.edu</EMAIL>'))
+        # Affiliation with email with double quote.
+        self.assertTrue(self.affs[18].endswith(' <EMAIL>yma@fyslab.hut.fi"</EMAIL>'))
+
+    def test_bibcodes_and_positions(self):
+        for aff in self.affs:
+            bibcode, position, _ = aff.split('\t')
+            self.assertEqual(len(bibcode), 19)
+            self.assertTrue(position.isdigit())
+        self.assertTrue(self.affs[0].startswith('1743lusi.book.....S\t0\t'))
+        self.assertTrue(self.affs[6].startswith('1981MitAG..52..127S\t0\t'))
+        self.assertTrue(self.affs[7].startswith('1981gjsa.proc..291S\t0\t'))
+
+    def test_affiliations(self):
+        self.assertEqual(self.get_aff(0), 'San Cosme y Damian, Paraguay')
+        self.assertEqual(self.get_aff(3), 'Lisbonne, le 14 f&eacute;vrier, 1877')
+        self.assertEqual(self.get_aff(4), 'Athen&aelig;um Club')
+        self.assertEqual(self.get_aff(14), "Institut d'Astrophysique de Paris 98bis, Bd Arago 75014 Paris, France")
+        self.assertEqual(self.get_aff(18).split(' <EMAIL>', 1)[0], 'Laboratory of Physics, Helsinki University of Technology, PO Box 1100, Helsinki 02015, Finland url="http://www.fyslab.hut.fi" "')
+
+    def get_aff(self, line_number):
+        return self.affs[line_number].rsplit('\t', 1)[-1]
 
     def tearDown(self):
         self.project.delete()

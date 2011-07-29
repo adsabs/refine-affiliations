@@ -1,10 +1,13 @@
 #!/usr/bin/python2.6
 
+import os
+import sys
 from optparse import OptionParser
 from google.refine import refine
-import os
 
 from clean_ads_affiliations import clean_ads_affs
+
+assert sys.hexversion >= 0x02060000
 
 SERVER = 'http://adsx.cfa.harvard.edu:3333'
 

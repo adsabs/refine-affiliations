@@ -1,12 +1,15 @@
-import re
-import os
 import codecs
+import os
+import re
+import sys
+
+assert sys.hexversion >= 0x02060000
+
 from csv_utils import escape_csv
 
 try:
     import ads.Unicode
 except ImportError:
-    import sys
     sys.path.append('/proj/ads/soft/python/lib/site-packages')
     import ads.Unicode
 
