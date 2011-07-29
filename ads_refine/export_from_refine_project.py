@@ -1,11 +1,20 @@
 #!/usr/bin/python2.6
 
+import sys
 import time
 from optparse import OptionParser
+
+assert sys.hexversion >= 0x02060000
+
 from google.refine import refine
 
-import ads.Unicode as Unicode
 from csv_utils import unescape_csv
+
+try:
+    import ads.Unicode as Unicode
+except ImportError:
+    sys.path.append('/proj/ads/soft/python/lib/site-packages')
+    import ads.Unicode as Unicode
 
 UNICODE_HANDLER = Unicode.UnicodeHandler()
 
@@ -37,7 +46,8 @@ def format_rows(rows):
                 else:
                     new = emails
             except SyntaxError:
-                print 'ERROR: Email field is not well formatted: ' + emails
+                raise Exception('ERROR: Email field is not well formatted:' +
+                        unescape_csv(emails))
 
         bibcodes = bibcodes.split(' ')
         for bibcode in bibcodes:
