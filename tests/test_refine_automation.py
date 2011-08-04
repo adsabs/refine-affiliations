@@ -181,8 +181,8 @@ class TestExportWithEdits(unittest.TestCase):
     def get_aff(self, line_number):
         return self.affs[line_number].rsplit('\t', 1)[-1]
 
-#   def tearDown(self):
-#       self.project.delete()
+    def tearDown(self):
+        self.project.delete()
 
 class TestExportModifiedOnly(unittest.TestCase):
 
