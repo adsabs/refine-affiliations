@@ -1,94 +1,70 @@
-[
+[{
+    "op":"core/column-rename",
+    "description":"Rename column Column2 to Bibcodes",
+    "oldColumnName":"Column2",
+    "newColumnName":"Bibcodes"
+  },
   {
-    "op": "core/column-split",
-    "description": "Split column Column by separator",
-    "engineConfig": {
-      "facets": [],
-      "mode": "row-based"
+    "op":"core/column-addition",
+    "description":"Create column Original emails at index 1 based on column Column using expression jython:if '<EMAIL>' in value and '</EMAIL>' in value:\u000a    emails = []\u000a    while '<EMAIL>' in value:\u000a        _, email = value.split('<EMAIL>', 1)\u000a        email, value = email.split('</EMAIL>', 1)\u000a        emails.append(email)\u000a    return str(emails)",
+    "engineConfig":{
+      "facets":[],
+      "mode":"row-based"
     },
-    "columnName": "Column",
-    "guessCellType": false,
-    "removeOriginalColumn": true,
-    "mode": "separator",
-    "separator": "\\t",
-    "regex": true,
-    "maxColumns": 0
+    "newColumnName":"Original emails",
+    "columnInsertIndex":1,
+    "baseColumnName":"Column",
+    "expression":"jython:if '<EMAIL>' in value and '</EMAIL>' in value:\u000a    emails = []\u000a    while '<EMAIL>' in value:\u000a        _, email = value.split('<EMAIL>', 1)\u000a        email, value = email.split('</EMAIL>', 1)\u000a        emails.append(email)\u000a    return str(emails)",
+    "onError":"set-to-blank"
   },
   {
-    "op": "core/column-rename",
-    "description": "Rename column Column 1 to Original",
-    "oldColumnName": "Column 1",
-    "newColumnName": "Original"
-  },
-  {
-    "op": "core/column-rename",
-    "description": "Rename column Column2 to Bibcodes",
-    "oldColumnName": "Column2",
-    "newColumnName": "Bibcodes"
-  },
-  {
-    "op": "core/column-addition",
-    "description": "Create column Emails at index 1 based on column Original using expression jython:emails = []\n\nwhile '<EMAIL>' in value:\n    _, value = value.split('<EMAIL>', 1)\n    email, value = value.split('</EMAIL>', 1)\n    emails.append(email.strip().replace('\"', r'\\\"'))\n\nif emails:\n    return '[\"%s\"]' % '\", \"'.join(emails)\nelse:\n    return '[]'",
-    "engineConfig": {
-      "facets": [],
-      "mode": "row-based"
+    "op":"core/column-addition",
+    "description":"Create column Original affiliation at index 1 based on column Column using expression grel:value.replace(/<EMAIL>[^<]*<\\/EMAIL>/, '').trim().replace(/  +/, ' ')",
+    "engineConfig":{
+      "facets":[],
+      "mode":"row-based"
     },
-    "newColumnName": "Emails",
-    "columnInsertIndex": 1,
-    "baseColumnName": "Original",
-    "expression": "jython:emails = []\n\nwhile '<EMAIL>' in value:\n    _, value = value.split('<EMAIL>', 1)\n    email, value = value.split('</EMAIL>', 1)\n    emails.append(email.strip().replace('\"', r'\\\"'))\n\nif emails:\n    return '[\"%s\"]' % '\", \"'.join(emails)\nelse:\n    return '[]'",
-    "onError": "set-to-blank"
+    "newColumnName":"Original affiliation",
+    "columnInsertIndex":1,
+    "baseColumnName":"Column",
+    "expression":"grel:value.replace(/<EMAIL>[^<]*<\\/EMAIL>/, '').trim().replace(/  +/, ' ')",
+    "onError":"set-to-blank"
   },
   {
-    "op": "core/text-transform",
-    "description": "Text transform on cells in column Original using expression grel:value.replace(/<EMAIL>[^<]*<\\/EMAIL>/, '')",
-    "engineConfig": {
-      "facets": [],
-      "mode": "row-based"
-    },
-    "columnName": "Original",
-    "expression": "grel:value.replace(/<EMAIL>[^<]*<\\/EMAIL>/, '')",
-    "onError": "set-to-blank",
-    "repeat": false,
-    "repeatCount": 10
+    "op":"core/column-removal",
+    "description":"Remove column Column",
+    "columnName":"Column"
   },
   {
-    "op": "core/text-transform",
-    "description": "Text transform on cells in column Original using expression value.trim()",
-    "engineConfig": {
-      "facets": [],
-      "mode": "row-based"
+    "op":"core/column-addition",
+    "description":"Create column New affiliation at index 1 based on column Original affiliation using expression grel:value",
+    "engineConfig":{
+      "facets":[],
+      "mode":"row-based"
     },
-    "columnName": "Original",
-    "expression": "value.trim()",
-    "onError": "keep-original",
-    "repeat": false,
-    "repeatCount": 10
+    "newColumnName":"New affiliation",
+    "columnInsertIndex":1,
+    "baseColumnName":"Original affiliation",
+    "expression":"grel:value",
+    "onError":"set-to-blank"
   },
   {
-    "op": "core/text-transform",
-    "description": "Text transform on cells in column Original using expression value.replace(/\\s+/,' ')",
-    "engineConfig": {
-      "facets": [],
-      "mode": "row-based"
+    "op":"core/column-addition",
+    "description":"Create column New emails at index 3 based on column Original emails using expression grel:value",
+    "engineConfig":{
+      "facets":[],
+      "mode":"row-based"
     },
-    "columnName": "Original",
-    "expression": "value.replace(/\\s+/,' ')",
-    "onError": "keep-original",
-    "repeat": false,
-    "repeatCount": 10
+    "newColumnName":"New emails",
+    "columnInsertIndex":3,
+    "baseColumnName":"Original emails",
+    "expression":"grel:value",
+    "onError":"set-to-blank"
   },
   {
-    "op": "core/column-addition",
-    "description": "Create column Without email at index 1 based on column Original using expression grel:value",
-    "engineConfig": {
-      "facets": [],
-      "mode": "row-based"
-    },
-    "newColumnName": "Without email",
-    "columnInsertIndex": 1,
-    "baseColumnName": "Original",
-    "expression": "grel:value",
-    "onError": "set-to-blank"
+    "op":"core/column-move",
+    "description":"Move column New affiliation to position 2",
+    "columnName":"New affiliation",
+    "index":2
   }
 ]

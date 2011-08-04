@@ -20,41 +20,67 @@ UNICODE_HANDLER = Unicode.UnicodeHandler()
 
 SERVER = 'http://adsx.cfa.harvard.edu:3333'
 
-def get_tsv_rows(project_id):
-    p = refine.RefineProject(SERVER, project_id=project_id)
-    return p.export(export_format='tsv')
-
-def format_rows(rows):
+def format_affiliations(project_id, modified_only=False):
     """
     Formats the raw output from Refine into an ADS-readable file.
     """
+    p = refine.RefineProject(SERVER, project_id=project_id)
+
+    # Check the columns.
+    if p.columns != ['Original affiliation', 'Original emails', 'New affiliation', 'New emails', 'Bibcodes']:
+        raise Exception('ERROR: Columns are not as expected.')
+
+    rows = p.export(export_format='tsv')
+
     affiliations = []
 
+    # Skip the first row that contains the column names.
     _ = rows.next()
     for row in rows:
         row = UNICODE_HANDLER.u2ent(row[:-1].decode('utf-8'))
-        original, new, emails, bibcodes = row.split('\t')
+        original_aff, original_emails, new_aff, new_emails, bibcodes = \
+                row.split('\t')
 
-        new = unescape_csv(new)
+        original = rebuild_affiliation(original_aff, original_emails)
+        new = rebuild_affiliation(new_aff, new_emails)
 
-        if emails and emails != '[]':
-            try:
-                emails = eval(unescape_csv(emails))
-                emails = '<EMAIL>%s</EMAIL>' % '</EMAIL> <EMAIL>'.join(emails)
-                if new:
-                    new = '%s %s' % (new, emails)
-                else:
-                    new = emails
-            except SyntaxError:
-                raise Exception('ERROR: Email field is not well formatted:' +
-                        unescape_csv(emails))
+        if modified_only and original == new:
+            continue
 
-        bibcodes = bibcodes.split(' ')
-        for bibcode in bibcodes:
-            bibcode, position = bibcode.split(',')
+        for bibcode in bibcodes.split(' '):
+            bibcode, position = bibcode.split(',', 1)
             affiliations.append('%s\t%s\t%s' % (bibcode, position, new))
 
     return sorted(affiliations)
+
+def rebuild_affiliation(aff, emails):
+    aff = unescape_csv(aff)
+    emails = unescape_csv(emails)
+    emails = create_email_string(emails)
+
+    if aff and emails:
+        return '%s %s' % (aff, emails)
+    elif aff:
+        return aff
+    elif emails:
+        return emails
+    else:
+        return ''
+
+def create_email_string(email_field):
+    if not email_field:
+        return ''
+    elif email_field == '[]':
+        return ''
+    else:
+        emails = unescape_csv(email_field)
+        try:
+            emails = eval(emails)
+        except SyntaxError:
+            raise Exception("ERROR: Email field is not well formatted: '%s'." % 
+                    emails)
+
+        return '<EMAIL>%s</EMAIL>' % '</EMAIL> <EMAIL>'.join(emails)
 
 def write_affiliations_to_file(path, affs):
     fs = open(path, 'w')
@@ -69,16 +95,15 @@ def main():
             help="export Refine project to FILE", metavar="FILE")
     parser.add_option("-p", "--project-id", dest="project_id",
             help="export rows from project ID", metavar="ID")
+    parser.add_option("-m", "--modified-only", dest="modified_only",
+            help="exported modified rows only", action="store_true")
     parser.add_option("-v", "--verbose", dest="verbose",
-            help="export rows from project ID", metavar="ID")
+            help="verbose output", action="store_true")
 
     options, _ = parser.parse_args()
 
-    rows = get_tsv_rows(options.project_id)
-    print 'The project %s has been exported.' % options.project_id
-    print 'Formatting the output.'
-    affiliations = format_rows(rows)
-    print 'Writing to the output file: %s.' % options.output_file
+    affiliations = format_affiliations(options.project_id,
+            options.modified_only)
     write_affiliations_to_file(options.output_file, affiliations)
     total_time = time.time() - t0
     print 'Done in %.2f seconds.' % total_time

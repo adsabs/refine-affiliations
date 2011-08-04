@@ -33,27 +33,27 @@ class TestRefineCreation(unittest.TestCase):
         return response.rows[0][column]
 
     def test_columns(self):
-        self.assertEqual(self.project.columns, ['Original', 'Without email', 'Emails', 'Bibcodes'])
+        self.assertEqual(self.project.columns, ['Original affiliation', 'Original emails', 'New affiliation', 'New emails', 'Bibcodes'])
 
     def test_row_number(self):
         response = self.project.get_rows()
         self.assertEqual(response.total, 18)
 
     def test_entity_conversion(self):
-        self.assertEqual(self.get_cell(2, 'Without email'), 'Istituto Astronomico, Università "La Sapienza", via G.M. Lancisi 29, I-00161 Roma, Italy'.decode('utf-8'))
-        self.assertEqual(self.get_cell(5, 'Without email'), 'Astronomical Institute, Czechoslovak Academy of Sciences, Ondřejov Observatory, and Astronomical Institute, Brno University.'.decode('utf-8'))
+        self.assertEqual(self.get_cell(2, 'New affiliation'), 'Istituto Astronomico, Università "La Sapienza", via G.M. Lancisi 29, I-00161 Roma, Italy'.decode('utf-8'))
+        self.assertEqual(self.get_cell(5, 'New affiliation'), 'Astronomical Institute, Czechoslovak Academy of Sciences, Ondřejov Observatory, and Astronomical Institute, Brno University.'.decode('utf-8'))
 
     def test_quotes(self):
-        self.assertEqual(self.get_cell(3, 'Without email'), 'Laboratoire "Astrophysique, Atomes et Molecules", Departement Atomes et Molecules en Astrophysique, Unite associee au CNRS No. 812, Observatoire de Paris-Meudon, 92190 Meudon, France')
-        self.assertEqual(self.get_cell(11, 'Without email'), "Institut d'Astrophysique de Paris 98bis, Bd Arago 75014 Paris, France")
+        self.assertEqual(self.get_cell(3, 'New affiliation'), 'Laboratoire "Astrophysique, Atomes et Molecules", Departement Atomes et Molecules en Astrophysique, Unite associee au CNRS No. 812, Observatoire de Paris-Meudon, 92190 Meudon, France')
+        self.assertEqual(self.get_cell(11, 'New affiliation'), "Institut d'Astrophysique de Paris 98bis, Bd Arago 75014 Paris, France")
 
     def test_emails(self):
-        self.assertEqual(eval(self.get_cell(18, 'Emails')), [])
-        self.assertEqual(eval(self.get_cell(10, 'Emails')), ["vittorio@astr1pi.difi.unipi.it"])
-        self.assertEqual(eval(self.get_cell(9, 'Emails')), ["beersatmsupa.pa.msu.edukriessleratmsupa.pa.msu.edu", "tbirdatkula.phsx.ukans.edu"])
+        self.assertEqual(self.get_cell(18, 'New emails'), None)
+        self.assertEqual(eval(self.get_cell(10, 'New emails')), ["vittorio@astr1pi.difi.unipi.it"])
+        self.assertEqual(eval(self.get_cell(9, 'New emails')), ["beersatmsupa.pa.msu.edukriessleratmsupa.pa.msu.edu", "tbirdatkula.phsx.ukans.edu"])
         # Email with a double quote.
-        self.assertEqual(self.get_cell(4, 'Emails'), r'["yma@fyslab.hut.fi\""]')
-        self.assertEqual(eval(self.get_cell(4, 'Emails')), ['yma@fyslab.hut.fi"'])
+        self.assertEqual(self.get_cell(4, 'New emails'), "[u'yma@fyslab.hut.fi\"']")
+        self.assertEqual(eval(self.get_cell(4, 'New emails')), ['yma@fyslab.hut.fi"'])
 
     def test_bibcodes(self):
         self.assertEqual(self.get_cell(11, 'Bibcodes'), '1997A&AS..121..407L,0')
@@ -70,8 +70,7 @@ class TestRefineExport(unittest.TestCase):
         # applying the JSON operations.
         server = refine.Refine(create.SERVER)
         self.project = server.open_project(project_id)
-        rows = export.get_tsv_rows(project_id)
-        self.affs = export.format_rows(rows)
+        self.affs = export.format_affiliations(project_id)
 
     def test_number_of_affiliations(self):
         self.assertEqual(len(self.affs), 19)
@@ -115,7 +114,7 @@ class TestRefineExport(unittest.TestCase):
     def tearDown(self):
         self.project.delete()
 
-class TestWithEdits(unittest.TestCase):
+class TestExportWithEdits(unittest.TestCase):
 
     def setUp(self):
         project_id = create.create_refine_project(TEST_DATA, 'Test project (can be safely removed).')
@@ -126,18 +125,17 @@ class TestWithEdits(unittest.TestCase):
 
         # Perform a few edits.
         ## Modify an affiliation.
-        self.project.edit('Without email', 'Astronomical Institute "Anton Pannekoek", University of Amsterdam, Kruislaan 403, NL--1098 SJ Amsterdam, The Netherlands', 'Astronomical Institute "Anton Pannekoek"')
+        self.project.edit('New affiliation', 'Astronomical Institute "Anton Pannekoek", University of Amsterdam, Kruislaan 403, NL--1098 SJ Amsterdam, The Netherlands', 'Astronomical Institute "Anton Pannekoek"')
         ## Remove an affiliation.
-        self.project.edit('Without email', 'San Cosme y Damian, Paraguay', '')
+        self.project.edit('New affiliation', 'San Cosme y Damian, Paraguay', '')
         ## Modify an email.
-        self.project.edit('Emails', r'["yma@fyslab.hut.fi\""]', '["yma@fyslab.hut.fi"]')
+        self.project.edit('New emails', """[u'yma@fyslab.hut.fi"']""", "[u'yma@fyslab.hut.fi']")
         ## Remove an email.
-        self.project.edit('Emails', '["saygac@istanbul.edu.tr"]', '')
-        self.project.edit('Emails', '["vittorio@astr1pi.difi.unipi.it"]', '[]')
+        self.project.edit('New emails', "[u'saygac@istanbul.edu.tr']", '')
+        self.project.edit('New emails', "[u'vittorio@astr1pi.difi.unipi.it']", '[]')
 
         # Grab the affiliations.
-        rows = export.get_tsv_rows(project_id)
-        self.affs = export.format_rows(rows)
+        self.affs = export.format_affiliations(project_id)
 
     def test_number_of_affiliations(self):
         self.assertEqual(len(self.affs), 19)
@@ -183,8 +181,91 @@ class TestWithEdits(unittest.TestCase):
     def get_aff(self, line_number):
         return self.affs[line_number].rsplit('\t', 1)[-1]
 
+#   def tearDown(self):
+#       self.project.delete()
+
+class TestExportModifiedOnly(unittest.TestCase):
+
+    def setUp(self):
+        project_id = create.create_refine_project(TEST_DATA, 'Test project (can be safely removed).')
+        # We need to reopen the project in order to force the refresh after
+        # applying the JSON operations.
+        server = refine.Refine(create.SERVER)
+        self.project = server.open_project(project_id)
+
+        # Perform a few edits.
+        ## Modify an affiliation.
+        self.project.edit('New affiliation', 'Astronomical Institute "Anton Pannekoek", University of Amsterdam, Kruislaan 403, NL--1098 SJ Amsterdam, The Netherlands', 'Astronomical Institute "Anton Pannekoek"')
+        ## Remove an affiliation.
+        self.project.edit('New affiliation', 'San Cosme y Damian, Paraguay', '')
+        ## Modify an email.
+        self.project.edit('New emails', "[u'yma@fyslab.hut.fi\"']", '["yma@fyslab.hut.fi"]')
+        ## Remove an email.
+        self.project.edit('New emails', "[u'saygac@istanbul.edu.tr']", '')
+        self.project.edit('New emails', "[u'vittorio@astr1pi.difi.unipi.it']", '[]')
+
+        # Grab the affiliations.
+        self.affs = export.format_affiliations(project_id, modified_only=True)
+
+        # Test if the edits went OK.
+        self.assertEqual(self.get_cell(1, 'New affiliation'), 'Astronomical Institute "Anton Pannekoek"')
+        self.assertEqual(self.get_cell(14, 'New affiliation'), '')
+        self.assertEqual(self.get_cell(4, 'New emails'), '["yma@fyslab.hut.fi"]')
+        self.assertEqual(self.get_cell(16, 'New emails'), '')
+        self.assertEqual(self.get_cell(10, 'New emails'), '[]')
+
+    def get_cell(self, row_number, column):
+        row_number -= 1
+        response = self.project.get_rows(start=row_number, limit=1)
+        return response.rows[0][column]
+
+    def test_number_of_affiliations(self):
+        self.assertEqual(len(self.affs), 5)
+
+    def test_absence_of_unicode(self):
+        try:
+            for aff in self.affs:
+                aff.decode('ascii')
+        except UnicodeDecodeError:
+            raise
+
+    def test_bibcodes_and_positions(self):
+        for aff in self.affs:
+            bibcode, position, _ = aff.split('\t')
+            self.assertEqual(len(bibcode), 19)
+            self.assertTrue(position.isdigit())
+        self.assertTrue(self.affs[0].startswith('1743lusi.book.....S\t0\t'))
+        self.assertTrue(self.affs[1].startswith('1983IsJAP..48...45S\t3\t'))
+        self.assertTrue(self.affs[2].startswith('1997A&AS..121..327B\t2\t'))
+        self.assertTrue(self.affs[3].startswith('1997A&AS..123...63V\t0\t'))
+        self.assertTrue(self.affs[4].startswith('2004NJPh....6...68M\t0\t'))
+
+    def test_affiliations(self):
+        self.assertEqual(self.get_aff(0), '')
+        self.assertEqual(self.get_aff(1), 'University of Istanbul')
+        self.assertEqual(self.get_aff(2), "Dipartimento di Fisica, Universit&agrave; di Pisa, Piazza Torricelli 2, 56126 Pisa, Italy and Osservatorio Astronomico Collurania, 64100 Teramo, Italy and Laboratori del Gran Sasso, INFN, 67100 L'Aquila, Italy")
+        self.assertEqual(self.get_aff(3), 'Astronomical Institute "Anton Pannekoek"')
+        self.assertEqual(self.get_aff(4), 'Laboratory of Physics, Helsinki University of Technology, PO Box 1100, Helsinki 02015, Finland url="http://www.fyslab.hut.fi" " <EMAIL>yma@fyslab.hut.fi</EMAIL>')
+
+    def get_aff(self, line_number):
+        return self.affs[line_number].rsplit('\t', 1)[-1]
+
     def tearDown(self):
         self.project.delete()
+
+class TestCreateEmailString(unittest.TestCase):
+
+    def test_empty_email(self):
+        self.assertEqual(export.create_email_string(None), '')
+        self.assertEqual(export.create_email_string(''), '')
+        self.assertEqual(export.create_email_string('[]'), '')
+
+    def test_normal(self):
+        self.assertEqual(export.create_email_string('"[""test@test.com""]"'), '<EMAIL>test@test.com</EMAIL>')
+        self.assertEqual(export.create_email_string('"[""test@test.com"", ""secondtest@test.com""]"'), '<EMAIL>test@test.com</EMAIL> <EMAIL>secondtest@test.com</EMAIL>')
+
+    def test_fault(self):
+        self.assertRaises(Exception, export.create_email_string, 'faulty email field')
 
 if __name__ == '__main__':
     unittest.main()

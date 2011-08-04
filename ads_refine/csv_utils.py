@@ -10,7 +10,7 @@ def escape_csv(data):
         return data
 
 def unescape_csv(data):
-    if '"' in data:
+    if data.startswith('"') and data.endswith('"'):
         return data[1:-1].replace('""', '"')
     else:
         return data
