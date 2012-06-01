@@ -6,6 +6,7 @@ import sys
 assert sys.hexversion >= 0x02060000
 
 from csv_utils import escape_csv
+from collections import defaultdict
 
 try:
     import ads.Unicode
@@ -20,8 +21,9 @@ def _preclean_affiliation(aff):
     """
     Performs basic cleaning operations on an affiliation string.
     """
+    aff = aff.decode('utf8')
     aff = SPACES_REGEX.sub(' ', aff).strip()
-    aff = UNICODE_HANDLER.ent2u(aff.decode('utf-8'))
+    aff = UNICODE_HANDLER.ent2u(aff)
     return aff
 
 def clean_ads_affs(path, verbose=0):
@@ -32,23 +34,29 @@ def clean_ads_affs(path, verbose=0):
     Returns a file in the form:
     affiliation\tbibcode1 bibcode2
     """
-    txt = open(path).read()
-
     msg('-- Create the list of bibcodes.', verbose)
 
-    lines = [line.split('\t', 2) for line in txt.split('\n') if line]
-    lines = [
-            [bibcode + ',' + position, _preclean_affiliation(escape_csv(line))]
-            for bibcode, position, line in lines
-            ]
+    affiliations = defaultdict(list)
 
-    # Reverse dictionary
-    d = {}
-    for bibcode, line in lines:
-        d.setdefault(line, []).append(bibcode)
+    for line in open(path):
+        line = line.strip()
+        # Sandwich.
+        try:
+            line = line.decode('utf8')
+        except UnicodeDecodeError:
+            print 'UNICODE ERROR:', line
+            continue
+        bibcode, position, affiliation = line.strip().split('\t', 2)
+        try:
+            affiliation = _preclean_affiliation(escape_csv(affiliation))
+        except ads.Unicode.UnicodeHandlerError:
+            print 'ENTITY ERROR:', line
+            continue
+        affiliations[affiliation].append('%s,%s' % (bibcode, position))
 
     msg('-- Transform back to list', verbose)
-    d = sorted(d.items())
+    affiliations = sorted(affiliations.items())
+    affiliations = ['\t'.join([aff, ' '.join(bibcodes)]) for aff, bibcodes in affiliations]
 
     if path.endswith('.merged'):
         new_path = os.path.join('/tmp', os.path.basename(path)[:-7] + '.reversed')
@@ -56,9 +64,8 @@ def clean_ads_affs(path, verbose=0):
         new_path = os.path.join('/tmp', os.path.basename(path) + '.reversed')
 
     msg('-- Writing to file %s.' % new_path, verbose)
+    open(new_path, 'w').write('\n'.join(affiliations).encode('utf8'))
 
-    d = sorted(['\t'.join([aff, ' '.join(bibcodes)]) for aff, bibcodes in d])
-    codecs.open(new_path, mode='w', encoding='utf-8').write('\n'.join(d))
     msg('-- Done writing to file.', verbose)
 
     return new_path

@@ -49,7 +49,7 @@ def main():
 
 def msg(message, verbose):
     if verbose:
-        print msg
+        print message
 
 if __name__ == '__main__':
     main()
