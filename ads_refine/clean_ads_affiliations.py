@@ -82,7 +82,7 @@ def clean_ads_affs(path, verbose=0):
         try:
             affiliation, emails = extract_emails(affiliation)
         except Exception, exc:
-            print 'WARNING: Wrong email markup: %s' % affiliation
+            print 'WARNING: Wrong email markup: %s' % affiliation.encode('utf8')
         emails = [email.encode('utf_8') for email in emails]
         line = '%s\t%s\t%s\t%s\t%s\n' % (affiliation, affiliation, emails, emails, ' '.join(bibcodes))
         out.write(line.encode('utf_8'))
