@@ -27,7 +27,10 @@ def format_affiliations(project_id, modified_only=False):
     p = refine.RefineProject(SERVER, project_id=project_id)
 
     # Check the columns.
-    if p.columns != ['Original affiliation', 'Original emails', 'New affiliation', 'New emails', 'Bibcodes']:
+    if p.columns != ['Original affiliation', 'Original emails', 'New emails', 'Original emails', 'Bibcodes and positions']:
+        print p.columns
+        ['Original affiliation', 'New affiliation', 'Original emails', 'New emails', 'Bibcodes and positions']
+        print ['Original affiliation', 'New affiliation', 'New emails', 'Original emails', 'Bibcodes and positions']
         raise Exception('ERROR: Columns are not as expected.')
 
     rows = p.export(export_format='tsv')
@@ -38,7 +41,7 @@ def format_affiliations(project_id, modified_only=False):
     _ = rows.next()
     for row in rows:
         row = UNICODE_HANDLER.u2ent(row[:-1].decode('utf-8'))
-        original_aff, original_emails, new_aff, new_emails, bibcodes = \
+        original_aff, new_aff, new_emails, original_emails, bibcodes = \
                 row.split('\t')
 
         original = rebuild_affiliation(original_aff, original_emails)

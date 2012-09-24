@@ -11,31 +11,28 @@ assert sys.hexversion >= 0x02060000
 
 SERVER = 'http://adsx.cfa.harvard.edu:3333'
 
-def create_refine_project(path, name, verbose=0):
+def create_refine_project(path, name, pretend=False, verbose=0):
     input_file = os.path.abspath(path)
     msg('Create a file that we can upload to Refine.', verbose)
     new_input_file = clean_ads_affs(input_file, verbose)
     msg('Upload to Refine.', verbose)
+ 
+    if not pretend:
+        r  = refine.Refine(SERVER)
+        project = r.new_project(project_file=new_input_file,
+                project_name='%s (%s)' % (name, os.path.basename(path).replace('.reversed', '.merged')),
+                split_into_columns=True,
+                separator='\t',
+                ignore_initial_non_blank_lines=0,
+                header_lines=1,
+                skip_initial_data_rows=0,
+                limit=0,
+                guess_value_type=False,
+                ignore_quotes=False)
 
-    r  = refine.Refine(SERVER)
-    project = r.new_project(project_file=new_input_file,
-            project_name='%s (%s)' % (name, os.path.basename(path).replace('.reversed', '.merged')),
-            split_into_columns=True,
-            separator='\t',
-            ignore_initial_non_blank_lines=0,
-            header_lines=0,
-            skip_initial_data_rows=0,
-            limit=0,
-            guess_value_type=False,
-            ignore_quotes=False)
+        msg('Done with success.', verbose)
 
-    msg("-- Project has been created. Now applying a few operations.", verbose)
-
-    project.apply_operations('ads_refine/create-project-operations.json')
-
-    msg('Done with success.', verbose)
-
-    return project.project_id
+        return project.project_id
 
 def main():
     parser = OptionParser()
@@ -43,9 +40,11 @@ def main():
             help="create Refine project from FILE", metavar="FILE")
     parser.add_option("-t", "--title", dest="title",
             help="create Refine project with TITLE", metavar="TITLE")
+    parser.add_option("--pretend", dest="pretend", action="store_true", default=False,
+            help="do not upload affiliations")
     options, _ = parser.parse_args()
     
-    create_refine_project(options.input_file, options.title, 1)
+    create_refine_project(options.input_file, options.title, options.pretend, 1)
 
 def msg(message, verbose):
     if verbose:

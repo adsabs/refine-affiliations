@@ -1,4 +1,3 @@
-import codecs
 import os
 import re
 import sys
@@ -26,13 +25,26 @@ def _preclean_affiliation(aff):
     aff = UNICODE_HANDLER.ent2u(aff)
     return aff
 
+RE_EMAIL = re.compile('<EMAIL>(.*?)</EMAIL>')
+
+def extract_emails(aff):
+    emails = []
+    for match in RE_EMAIL.finditer(aff):
+        emails.append(match.group(1))
+
+    aff = RE_EMAIL.sub(' ', aff)
+    aff = re.sub('\s\s+', ' ', aff).strip()
+    if '<EMAIL>' in aff or '</EMAIL>' in aff:
+        raise Exception('Wrong email markup.')
+    return aff, emails
+
 def clean_ads_affs(path, verbose=0):
     """
     Reads an ADS affiliation file in the form:
     bibcode\taffiliation
 
     Returns a file in the form:
-    affiliation\tbibcode1 bibcode2
+    affiliation\taffiliation\temails\temails\tbibcode1 bibcode2
     """
     msg('-- Create the list of bibcodes.', verbose)
 
@@ -56,7 +68,6 @@ def clean_ads_affs(path, verbose=0):
 
     msg('-- Transform back to list', verbose)
     affiliations = sorted(affiliations.items())
-    affiliations = ['\t'.join([aff, ' '.join(bibcodes)]) for aff, bibcodes in affiliations]
 
     if path.endswith('.merged'):
         new_path = os.path.join('/tmp', os.path.basename(path)[:-7] + '.reversed')
@@ -64,7 +75,18 @@ def clean_ads_affs(path, verbose=0):
         new_path = os.path.join('/tmp', os.path.basename(path) + '.reversed')
 
     msg('-- Writing to file %s.' % new_path, verbose)
-    open(new_path, 'w').write('\n'.join(affiliations).encode('utf8'))
+
+    out = open(new_path, 'a')
+    out.write('Original affiliation\tNew affiliation\tOriginal emails\tNew emails\tBibcodes and positions\n')
+    for affiliation, bibcodes in affiliations:
+        try:
+            affiliation, emails = extract_emails(affiliation)
+        except Exception, exc:
+            print 'WARNING: Wrong email markup: %s' % affiliation
+        emails = [email.encode('utf_8') for email in emails]
+        line = '%s\t%s\t%s\t%s\t%s\n' % (affiliation, affiliation, emails, emails, ' '.join(bibcodes))
+        out.write(line.encode('utf_8'))
+    out.close()
 
     msg('-- Done writing to file.', verbose)
 
