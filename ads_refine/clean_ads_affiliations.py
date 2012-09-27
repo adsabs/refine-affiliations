@@ -50,7 +50,7 @@ def clean_ads_affs(path, verbose=0):
 
     affiliations = defaultdict(list)
 
-    for line in open(path):
+    for index, line in enumerate(open(path)):
         line = line.strip()
         # Sandwich.
         try:
@@ -67,6 +67,8 @@ def clean_ads_affs(path, verbose=0):
             print 'NOT ENOUGH FIELDS:', line
             continue
         affiliations[affiliation].append('%s,%s' % (bibcode, position))
+        if index % 50000 == 0:
+            print 'Done %d.' % index
 
     msg('-- Transform back to list', verbose)
     affiliations = sorted(affiliations.items())
