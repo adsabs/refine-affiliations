@@ -95,6 +95,8 @@ def latest_ast_affiliations_project_id():
             file_name = match.group()
             if file_name > latest_project[0]:
                 latest_project = (file_name, id)
+    
+    print 'Extracting from project "%s".' % latest_project[1] 
 
     return latest_project[1]
 
