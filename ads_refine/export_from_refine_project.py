@@ -36,7 +36,7 @@ def extract_affiliations(project_id, modified_only=False):
     # Skip the first row that contains the column names.
     rows.next()
     for row in rows:
-        row = UNICODE_HANDLER.u2ent(row[:-1])
+        row = UNICODE_HANDLER.u2ent(row[:-1].decode('utf_8'))
         original_aff, new_aff, original_emails, new_emails, bibcodes = row.split('\t')
 
         original = rebuild_affiliation(original_aff, original_emails)
@@ -128,7 +128,7 @@ def main():
 
     fs = open(output_file, 'a')
     for index, affiliation in enumerate(extract_affiliations(project_id, options.modified_only)):
-        fs.write(affiliation + '\n')
+        fs.write(affiliation.encode('utf_8') + '\n')
         if index % 50000 == 0:
             print 'Done %d.' % index
     fs.close()
