@@ -1,5 +1,7 @@
 #!/usr/bin/python2.6
 
+import os
+import re
 import sys
 import time
 from optparse import OptionParser
@@ -20,29 +22,22 @@ UNICODE_HANDLER = Unicode.UnicodeHandler()
 
 SERVER = 'http://adsx.cfa.harvard.edu:3333'
 
-def format_affiliations(project_id, modified_only=False):
+def extract_affiliations(project_id, modified_only=False):
     """
     Formats the raw output from Refine into an ADS-readable file.
     """
     p = refine.RefineProject(SERVER, project_id=project_id)
 
     # Check the columns.
-    if p.columns != ['Original affiliation', 'Original emails', 'New emails', 'Original emails', 'Bibcodes and positions']:
-        print p.columns
-        ['Original affiliation', 'New affiliation', 'Original emails', 'New emails', 'Bibcodes and positions']
-        print ['Original affiliation', 'New affiliation', 'New emails', 'Original emails', 'Bibcodes and positions']
+    if p.columns != ['Original affiliation', 'New affiliation', 'Original emails', 'New emails', 'Bibcodes and positions']:
         raise Exception('ERROR: Columns are not as expected.')
 
     rows = p.export(export_format='tsv')
-
-    affiliations = []
-
     # Skip the first row that contains the column names.
-    _ = rows.next()
+    rows.next()
     for row in rows:
-        row = UNICODE_HANDLER.u2ent(row[:-1].decode('utf-8'))
-        original_aff, new_aff, new_emails, original_emails, bibcodes = \
-                row.split('\t')
+        row = UNICODE_HANDLER.u2ent(row[:-1])
+        original_aff, new_aff, original_emails, new_emails, bibcodes = row.split('\t')
 
         original = rebuild_affiliation(original_aff, original_emails)
         new = rebuild_affiliation(new_aff, new_emails)
@@ -52,11 +47,12 @@ def format_affiliations(project_id, modified_only=False):
 
         for bibcode in bibcodes.split(' '):
             bibcode, position = bibcode.split(',', 1)
-            affiliations.append('%s\t%s\t%s' % (bibcode, position, new))
-
-    return sorted(affiliations)
+            yield  '%s\t%s\t%s' % (bibcode, position, new)
 
 def rebuild_affiliation(aff, emails):
+    """
+    Combines the affiliation and the emails.
+    """
     aff = unescape_csv(aff)
     emails = unescape_csv(emails)
     emails = create_email_string(emails)
@@ -85,17 +81,28 @@ def create_email_string(email_field):
 
         return '<EMAIL>%s</EMAIL>' % '</EMAIL> <EMAIL>'.join(emails)
 
-def write_affiliations_to_file(path, affs):
-    fs = open(path, 'w')
-    fs.write('\n'.join(affs))
-    fs.close()
+def latest_ast_affiliations_project_id():
+    """
+    Returns the project id of the latest astronomy affiliations project.
+    """
+    server = refine.Refine(SERVER)
+    name_pattern = re.compile('affils.ast.\d{8}_\d{4}')
+
+    latest_project = ('', None)
+    for id, properties in server.list_projects().items():
+        match = name_pattern.search(properties['name'])
+        if match is not None:
+            file_name = match.group()
+            if file_name > latest_project[0]:
+                latest_project = (file_name, id)
+
+    return latest_project[1]
 
 def main():
     t0 = time.time()
 
-    parser = OptionParser()
-    parser.add_option("-o", "--output", dest="output_file",
-            help="export Refine project to FILE", metavar="FILE")
+    usage = "usage: %prog [options] output_file"
+    parser = OptionParser(usage=usage)
     parser.add_option("-p", "--project-id", dest="project_id",
             help="export rows from project ID", metavar="ID")
     parser.add_option("-m", "--modified-only", dest="modified_only",
@@ -103,11 +110,27 @@ def main():
     parser.add_option("-v", "--verbose", dest="verbose",
             help="verbose output", action="store_true")
 
-    options, _ = parser.parse_args()
+    options, args = parser.parse_args()
+    if not args or len(args) > 1:
+        print 'Output file is required.'
+        parser.print_usage()
+        return
+    else:
+        output_file = args[0]
+        if os.path.exists(output_file):
+            os.remove(output_file)
 
-    affiliations = format_affiliations(options.project_id,
-            options.modified_only)
-    write_affiliations_to_file(options.output_file, affiliations)
+    project_id = options.project_id if options.project_id else latest_ast_affiliations_project_id()
+
+    print 'Exporting affiliations from project %d to file %s.' % (project_id, output_file) 
+
+    fs = open(output_file, 'a')
+    for index, affiliation in enumerate(extract_affiliations(project_id, options.modified_only)):
+        fs.write(affiliation + '\n')
+        if index % 50000 == 0:
+            print 'Done %d.' % index
+    fs.close()
+
     total_time = time.time() - t0
     print 'Done in %.2f seconds.' % total_time
 
