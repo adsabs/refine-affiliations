@@ -13,15 +13,21 @@ assert sys.hexversion >= 0x02060000
 SERVER = 'http://adsx.cfa.harvard.edu:3333'
 
 def create_refine_project(path, name, pretend=False, verbose=0):
+    """
+    Creates a project in google Refine and loads the affiliations.
+    """
     input_file = os.path.abspath(path)
     msg('Create a file that we can upload to Refine.', verbose)
     new_input_file = clean_ads_affs(input_file, verbose)
     msg('Upload to Refine.', verbose)
  
+    project_name = 'Astronomy affiliations (%s) (created %s)' % (os.path.basename(path).replace('.reversed', '.merged'), time.asctime())
+    print 'Creating project "%s".' % project_name
+
     if not pretend:
         r  = refine.Refine(SERVER)
         project = r.new_project(project_file=new_input_file,
-                project_name='Astronomy affiliations (%s) (created %s)' % (os.path.basename(path).replace('.reversed', '.merged'), time.asctime()),
+                project_name=project_name,
                 split_into_columns=True,
                 separator='\t',
                 ignore_initial_non_blank_lines=0,
