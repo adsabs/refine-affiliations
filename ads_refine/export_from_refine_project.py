@@ -122,7 +122,7 @@ def main():
 
     project_id = options.project_id if options.project_id else latest_ast_affiliations_project_id()
 
-    print 'Exporting affiliations from project %d to file %s.' % (project_id, output_file) 
+    print 'Exporting affiliations from project %s to file %s.' % (project_id, output_file) 
 
     fs = open(output_file, 'a')
     for index, affiliation in enumerate(extract_affiliations(project_id, options.modified_only)):
