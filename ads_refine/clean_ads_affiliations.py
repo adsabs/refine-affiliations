@@ -55,14 +55,16 @@ def clean_ads_affs(path, verbose=0):
         # Sandwich.
         try:
             line = line.decode('utf8')
+            bibcode, position, affiliation = line.strip().split('\t', 2)
+            affiliation = _preclean_affiliation(escape_csv(affiliation))
         except UnicodeDecodeError:
             print 'UNICODE ERROR:', line
             continue
-        bibcode, position, affiliation = line.strip().split('\t', 2)
-        try:
-            affiliation = _preclean_affiliation(escape_csv(affiliation))
         except ads.Unicode.UnicodeHandlerError:
             print 'ENTITY ERROR:', line
+            continue
+        except ValueError:
+            print 'NOT ENOUGH FIELDS:', line
             continue
         affiliations[affiliation].append('%s,%s' % (bibcode, position))
 
