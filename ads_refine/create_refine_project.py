@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 from optparse import OptionParser
 from google.refine import refine
 
@@ -20,7 +21,7 @@ def create_refine_project(path, name, pretend=False, verbose=0):
     if not pretend:
         r  = refine.Refine(SERVER)
         project = r.new_project(project_file=new_input_file,
-                project_name='Astronomy affiliations (%s)' % (os.path.basename(path).replace('.reversed', '.merged')),
+                project_name='Astronomy affiliations (%s) (created %s)' % (os.path.basename(path).replace('.reversed', '.merged'), time.asctime()),
                 split_into_columns=True,
                 separator='\t',
                 ignore_initial_non_blank_lines=0,
