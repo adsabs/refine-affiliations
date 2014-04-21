@@ -1,2 +1,14 @@
 *.pyc
 .*.swp
+*.old
+solr/logs
+solr/solr/data
+solr/work
+realm.properties
+scripts/etc
+accounts.cfg
+scripts/desy_affiliations
+scripts/icns.marshal
+scripts/desy_affs.py
+scripts/var
+scripts/.nfs*
