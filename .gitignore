@@ -7,8 +7,12 @@ solr/work
 realm.properties
 scripts/etc
 accounts.cfg
+celeryconfig.py
+extracted_affiliations/*
 scripts/desy_affiliations
 scripts/icns.marshal
 scripts/desy_affs.py
 scripts/var
 scripts/.nfs*
+rabbitmq*
+
