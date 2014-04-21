@@ -1,0 +1,47 @@
+# Countries
+Suisse, Switzerland, Schweiz
+Italy, Italia
+
+# Towns
+Roma, Rome
+Geneve, Geneva, Genève, Genéve, Genêve
+München, Muenchen, Munchen, Munich, Muenich, Münich
+Koln, Koeln, Köln
+
+# Abbreviations
+Astron, Astronomy, Astronomie
+Astrophys, Astrofisica, astrophysics, astrophysik
+Cent, Ctr, Center, Centre, Centro
+Coll, College, Collège
+Dept, Department, Departement, Département, Dipartamento
+Div, Division
+Ec, École, Ecole, School, Sch, Schule
+Norm, Normal, Normale
+Sup, Supérieur, Superieur, Supérieure, Superieure
+Faculty, Faculte, Faculté, Fakultät, Fakultat, Faculdade
+fédérale, federale
+fur, fuer, für
+Info, Information
+Inst, Institute, Institut
+Lab, Laboratory, Laboratoire
+Nat, Natl, National
+At, Atomic
+Nucl, Nucléaire, Nucléaires, Nucleaire, Nucleaires
+Obs, Observ, Observatory, Observatoire
+Organisation, Organization
+Phys, Fisica, Physics, Physique, Physik
+Recherche, Recherches
+Res, Research
+Sci, Science, Sciences
+Tech, Technology, Technical, Technische
+Theor, Theoretical, Theory, Théorie, Theorie, TH
+U, Uni, Univ, University, Universidad, Universitat, Université, Universitaet, Universität, Universite, Universita, Università, Universita'
+Av, Ave, Avenue
+st, str, street, strasse
+Rte, Route
+Appl, Applied
+Blvd, Boulevard
+Hochsch, Hochschule
+Adv, Advanced
+Acad, Academy, Académie, Academie, Academical
+Européen, Europeen, Européenne, Europeenne, European
