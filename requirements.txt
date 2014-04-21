@@ -1,0 +1,5 @@
+pip>=1.4.1
+solrpy
+Celery
+gdata
+-e git+https://github.com/PaulMakepeace/refine-client-py.git#egg=refine-client-py 
