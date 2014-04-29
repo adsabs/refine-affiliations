@@ -30,24 +30,26 @@ if [ ! -d rabbitmq_server-3.0.4 ]; then
    mv rabbitmq_server-3.0.4 rabbitmq-server
 fi
 
-if [ -f accounts.cfg ]; then 
-	echo "[solr]
-	url = http://localhost:8983/solr
-	user = benoit
-	password = anothersolrpassword
+if [ ! -f accounts.cfg ]; then 
+	echo "
+[solr]
+url = http://localhost:8983/solr
+user = benoit
+password = anothersolrpassword
 
-	[spreadsheet]
-	user = badzil@gmail.com
-	password = mtrfrswdktijnziu
+[spreadsheet]
+user = badzil@gmail.com
+password = mtrfrswdktijnziu
 	" > accounts.cfg
 fi 
 
 
 if [ ! -f celeryconfig.py ]; then 
-	echo 'BROKER_URL = "amqp://guest:guest@localhost:5673/"
-	CELERY_RESULT_BACKEND = "amqp"
-	CELERY_IMPORTS = ("ads_refine.institution_searcher", )
-	CELERYD_CONCURRENCY = 6' > celeryconfig.py
+	echo '
+BROKER_URL = "amqp://guest:guest@localhost:5673/"
+CELERY_RESULT_BACKEND = "amqp"
+CELERY_IMPORTS = ("ads_refine.institution_searcher", )
+CELERYD_CONCURRENCY = 6' > celeryconfig.py
 fi 
 
 
