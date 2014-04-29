@@ -3,9 +3,9 @@ import os
 import re
 import time
 
-import institution_searcher as s
-import spreadsheet_interface
-from clean_ads_affiliations import _preclean_affiliation
+from ads_refine import institution_searcher as searcher 
+from ads_refine import spreadsheet_interface
+from ads_refine.clean_ads_affiliations import _preclean_affiliation
 from ads.Unicode import UnicodeHandlerError
 
 STATS = {}
@@ -104,8 +104,9 @@ def main(affiliation_file, spreadsheet_name, everything, output_number):
         affiliations = dict(sorted(affiliations.items(), key=lambda aff: aff[1], reverse=True)[:output_number])
 
     print 'Disambiguating %d affiliations...' % len(affiliations)
-    res = s.search_institutions(affiliations.keys())
+    res = searcher.search_institutions(affiliations.keys()) #, number_of_processes=1)
     print 'Done disambiguating.'
+
 
     spreadsheet_interface.connect()
     unmatched = [r for r in res if not r[1]]

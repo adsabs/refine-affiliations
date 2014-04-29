@@ -18,16 +18,18 @@ def connect():
     return CLIENT
 
 def upload_data(data, spreadsheet_name, title='None'):
-    db = CLIENT.GetDatabases(name=spreadsheet_name)[0]
-    table = db.CreateTable('%s (%s)' % (title, time.strftime('%b %d, %Y')), data[0].keys())
-    for record in data:
-        format_record(record)
-        try:
-            table.AddRecord(record)
-        except:
-            # In case of problem, retry before failing.
-            time.sleep(1)
-            table.AddRecord(record)
+
+    if len(data):
+        db = CLIENT.GetDatabases(name=spreadsheet_name)[0]    
+        table = db.CreateTable('%s (%s)' % (title, time.strftime('%b %d, %Y')), data[0].keys())
+        for record in data:
+            format_record(record)
+            try:
+                table.AddRecord(record)
+            except:
+                # In case of problem, retry before failing.
+                time.sleep(1)
+                table.AddRecord(record)
 
 def upload_statistics(statistics, spreadsheet_name):
     """

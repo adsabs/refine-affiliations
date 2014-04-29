@@ -44,6 +44,7 @@ def search_institution(institution, clean_up=True, logic="OR", fuzzy=False, post
     """
     Searches an institution and returns the response object.
     """
+
     clean_institution = clean_up and _clean_affiliation(institution) or institution
     if fuzzy:
         clean_institution = re.sub('(\s|$)', r'~\1', clean_institution)
@@ -58,7 +59,7 @@ def search_institution(institution, clean_up=True, logic="OR", fuzzy=False, post
                 'clean_institution': clean_institution,
                 'clean_up': clean_up,
                 'time': time.asctime(),
-                'exception': e.reason,
+                'exception': hasattr(e, 'reason') and e.reason or e.message
                 }
         logging.error(json.dumps(error))
         return None
@@ -118,9 +119,10 @@ def search_institutions(institutions, clean_up=True, number_of_processes=NUM_OF_
 
         # Now we wait that all tasks complete.
         while any([not task_result.ready() for task_result in task_results]):
-            time.sleep(0.1)
+            time.sleep(2)
 
-       # Extract the results.
+        # Extract the results.
+        results = []
         for task_result in task_results:
             results += task_result.result
     else:

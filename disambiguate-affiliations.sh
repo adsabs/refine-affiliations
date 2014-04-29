@@ -11,7 +11,7 @@ export RABBITMQ_NODE_PORT=5673
 sleep 2
 
 
-celeryd --loglevel=WARNING &
+celery worker --loglevel=WARNING &
 
 echo "$!" > "celery.pid"
 
@@ -20,7 +20,7 @@ sleep 2
 
 
 # This runs the disambiguation with the latest file extracted.
-python $AFFILIATION_HOME/scripts/disambiguate.py -e $AFFILIATION_HOME/extracted_affiliations/input/`ls -t1 $AFFILIATION_HOME/extracted_affiliations/input/ | head -n1` "Astronomy affiliations disambiguation"
+python $AFFILIATION_HOME/ads_refine/disambiguate.py -e $AFFILIATION_HOME/extracted_affiliations/input/`ls -t1 $AFFILIATION_HOME/extracted_affiliations/input/ | head -n1` "Astronomy affiliations disambiguation"
 
 echo "After disambiguation"
 
