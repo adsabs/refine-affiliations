@@ -38,7 +38,9 @@ Usage:
 		``
    4. disambiguate affiliations 
 		``bash 
+    $ ./start-celery.sh
 		$ ./disambiguate-affiliations.sh 
+    $ ./stop-celery.sh
 		``
    5. export affiliations back to Refine 
 		``bash 
