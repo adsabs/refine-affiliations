@@ -27,7 +27,7 @@ mkdir -p extracted_affiliations/output || 0
 if [ ! -d rabbitmq_server-3.0.4 ]; then
    wget http://www.rabbitmq.com/releases/rabbitmq-server/v3.0.4/rabbitmq-server-generic-unix-3.0.4.tar.gz
    tar -xzf rabbitmq-server-generic-unix-3.0.4.tar.gz
-   mv rabbitmq_server-generic-unix-3.0.4 rabbitmq-server
+   mv rabbitmq_server-3.0.4 rabbitmq-server
 fi
 
 if [ -f accounts.cfg ]; then 
