@@ -1,5 +1,7 @@
 #!/bin/bash -xe
 
+export PYTHONPATH=.:$PYTHONPATH
+
 AFFILIATION_HOME=`pwd`
 
 source $AFFILIATION_HOME/python/bin/activate

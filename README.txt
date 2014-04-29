@@ -7,7 +7,27 @@ Usage:
 		$ git clone https://github.com/adsabs/refine-affiliations
 		$ cd refine-affiliations 
 		$ ./setup.sh
+
+    # if you want to run services locally, you need to start them
+
+    $ ./start-solr.sh
+    $ ./start-rabbitmq.sh
+    $ ./start-celery.sh 
 		``
+
+    You can also use services running on the adsx machine; for this you have to edit
+
+      * accounts.cfs
+      * celeryconfig.py
+
+    And set the following:
+
+      accounts.cfg
+        url = http://adsx.cfa.harvard.edu:8983/solr
+
+      celeryconfig.py:
+        BROKER_URL = "amqp://guest:guest@localhost:5674/"
+
    2. get data from Refine server (http://adsx:3333)
 		``bash
 		$ ./export-data-from-refine.sh 
